@@ -1,0 +1,46 @@
+// 1. Definir área de estudio (Rectángulo sobre los Cerros Orientales)
+var region = ee.Geometry.Rectangle([-74.05, 4.58, -73.98, 4.65]); 
+Map.centerObject(region, 13);
+Map.addLayer(region, {color: 'red'}, 'Área de Estudio'); // Capa oculta por defecto
+
+// 2. Cargar el Dataset de Satellite Embeddings (V1 Annual)
+// Estos son los "embeddings" que capturan patrones complejos del terreno
+var embeddings = ee.ImageCollection('GOOGLE/SATELLITE_EMBEDDING/V1/ANNUAL')
+  .filterBounds(region)
+  .filterDate('2023-01-01', '2023-12-31')
+  .first() // Tomamos el mosaico anual disponible
+  .clip(region);
+
+// 4. Preparar el entrenamiento (Muestreo)
+// Aumentamos ligeramente la muestra para una mejor representación
+var training = embeddings.sample({
+  region: region,
+  scale: 10,
+  numPixels: 5000 // Muestra robusta para la complejidad de los embeddings
+});
+
+// 5. Configurar y entrenar el Clusterer (K-Means)
+// Seguimos con 7 grupos (puedes ajustar este número según veas el resultado)
+var numberOfClusters = 7; 
+var clusterer = ee.Clusterer.wekaKMeans(numberOfClusters).train(training);
+
+// 6. Aplicar la clasificación a la capa de Embeddings
+var result = embeddings.cluster(clusterer);
+
+// 7. Visualización del resultado final CON CORRECCIÓN DE COLORES
+
+var paletaCerros = [
+  '#228B22', // Verde Bosque (ForestGreen)
+  '#32CD32', // Verde Lima (LimeGreen)
+  '#FF8C00', // Naranja Oscuro (DarkOrange)
+  '#FFD700', // Oro (Gold)
+  '#8B4513', // Marrón Silla (SaddleBrown)
+  '#FF00FF', // Fucsia 
+  '#FF0000'  // Turquesa Oscuro (DarkTurquoise)
+];
+
+// Visualizamos el clustering usando la paleta definida
+Map.addLayer(result, {min: 0, max: numberOfClusters - 1, palette: paletaCerros}, 'Clustering IA - 7 Clases');
+
+
+
