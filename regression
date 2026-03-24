@@ -374,39 +374,4 @@ var Forest = /* color: #1fd620 */ee.FeatureCollection(
               "system:index": "30"
             })]);
 /***** End of imports. If edited, may not auto-convert in the playground. *****/
-// 1. Definir área de interés (Chiribiquete o cualquier zona de selva)
-var region = ee.Geometry.Point([-72.76, 2.45]).buffer(5000).bounds();
-Map.centerObject(region, 12);
-Map.addLayer(region, {color: 'green'}, 'Área de Estudio');
-
-// 2. Cargar imagen de Alpha Earth (Ruta Oficial)
-var image = ee.ImageCollection('GOOGLE/SATELLITE_EMBEDDING/V1/ANNUAL')
-  .filterBounds(region)
-  .filterDate('2024-01-01', '2024-12-31')
-  .first()
-  .clip(region);
-
-// 3. Crear puntos de entrenamiento
-// IMPORTANTE: Asegúrate de que 'Forest' y 'Deforested' existan en tus Imports
-var trainingPoints = Forest.merge(Deforested); 
-
-// 4. Muestrear los embeddings en esos puntos
-var training = image.sampleRegions({
-  collection: trainingPoints,
-  properties: ['class'], // El nombre que le diste a la propiedad en la geometría
-  scale: 10
-});
-
-// 5. Entrenar Clasificador (Random Forest con 100 árboles para más precisión)
-var classifier = ee.Classifier.smileRandomForest(100).train({
-  features: training,
-  classProperty: 'class',
-  inputProperties: image.bandNames()
-});
-
-// 6. Clasificar la imagen de Embeddings
-var classified = image.classify(classifier);
-
-// 7. Visualización
-// Verde para bosque (0), Rojo para deforestación (1)
-Map.addLayer(classified, {min: 0, max: 1, palette: ['#228B22', '#FF0000']}, 'Clasificación Alpha Earth');
+//Regresion
