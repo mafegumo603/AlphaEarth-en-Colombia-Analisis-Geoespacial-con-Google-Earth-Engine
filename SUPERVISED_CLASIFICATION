@@ -1,6 +1,6 @@
 // 1. Definir área de interés (Chiribiquete o cualquier zona de selva)
 var region = ee.Geometry.Point([-72.76, 2.45]).buffer(5000).bounds();
-Map.centerObject(region, 12);
+Map.centerObject(region, {color: 'red'} 12);
 
 // 2. Cargar imagen de Alpha Earth (Ruta Oficial)
 var image = ee.ImageCollection('GOOGLE/SATELLITE_EMBEDDING/V1/ANNUAL')
