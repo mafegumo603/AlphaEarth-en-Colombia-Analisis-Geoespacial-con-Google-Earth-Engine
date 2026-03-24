@@ -1,8 +1,5 @@
 /**** Start of imports. If edited, may not auto-convert in the playground. ****/
-var Forest = 
-    /* color: #1fd620 */
-    /* shown: false */
-    ee.FeatureCollection(
+var Forest = /* color: #1fd620 */ee.FeatureCollection(
         [ee.Feature(
             ee.Geometry.Point([-72.77761122963432, 2.49021620560627]),
             {
