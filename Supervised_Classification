@@ -1,0 +1,43 @@
+// 1. [SELECCIONAR] Definir área de estudio (Cerros Orientales)
+var region = ee.Geometry.Rectangle([-74.05, 4.58, -73.98, 4.65]); 
+Map.centerObject(region, 13);
+Map.addLayer(region, {color: 'red'}, 'Área de Estudio');
+
+// 2. Cargar Dataset de Alpha Earth (Satellite Embedding)
+var collection = ee.ImageCollection("COPERNICUS/S2_SR_HARMONIZED")
+  .filterBounds(region)
+  .filterDate('2023-01-01', '2023-12-31')
+  .filter(ee.Filter.lt('CLOUDY_PIXEL_PERCENTAGE', 20));
+  
+// 3. Crear una imagen compuesta (Mediana) y seleccionar bandas ópticas
+var image = collection.median().clip(region).select(['B2', 'B3', 'B4', 'B8']); 
+
+// Visualización previa en color real
+Map.addLayer(image, {bands: ['B4', 'B3', 'B2'], min: 0, max: 3000}, 'Imagen Satelital');
+
+
+// 4. Preparar datos para el entrenamiento (muestreo aleatorio)
+var training = image.sample({
+  region: region,
+  scale: 10,
+  numPixels: 1000 
+});
+
+
+// 5. Configurar el Clusterer (K-Means)
+var numberOfClusters = 7; 
+var clusterer = ee.Clusterer.wekaKMeans(numberOfClusters).train(training);
+
+// 6. Aplicar la clasificación
+var result = image.cluster(clusterer);
+
+// 7. Visualización del resultado
+Map.addLayer(result.randomVisualizer(), {}, 'Clustering (7) Cerros Orientales');
+
+
+
+
+
+
+
+
