@@ -372,6 +372,48 @@ var Forest = /* color: #1fd620 */ee.FeatureCollection(
             {
               "class": 1,
               "system:index": "30"
-            })]);
+            })]),
+    queryPoint = /* color: #0b4a8b */ee.Geometry.Point([-77.09021546148223, 3.9051902785370505]);
 /***** End of imports. If edited, may not auto-convert in the playground. *****/
-//Busqueda de similitud
+// 1. El punto de consulta (Asegúrate de tener el marcador 'queryPoint' en el buque naranja)
+var areaBusqueda = queryPoint.buffer(3000).bounds();
+Map.centerObject(queryPoint, 18);
+Map.addLayer(queryPoint, {color: 'red'}, 'Punto de Referencia');
+
+// 2. Cargar Alpha Earth
+var image = ee.ImageCollection('GOOGLE/SATELLITE_EMBEDDING/V1/ANNUAL')
+  .filterBounds(areaBusqueda)
+  .filterDate('2024-01-01', '2024-12-31')
+  .first()
+  .clip(areaBusqueda);
+
+// 3. Obtener el vector del punto de consulta
+var queryVector = image.reduceRegion({
+  reducer: ee.Reducer.first(),
+  geometry: queryPoint,
+  scale: 10
+}).toArray();
+
+// 4. Cálculo de Similitud (Coseno) - VERSIÓN ROBUSTA
+var imageArray = image.toArray();
+
+// Calculamos el Producto Punto: A * B
+var dotProduct = imageArray.arrayDot(queryVector);
+
+// Calculamos las magnitudes (normas) para la división
+var magnitudeImage = imageArray.arrayLength(0).sqrt();
+var magnitudeQuery = queryVector.arrayLength(0).sqrt();
+
+// Aplicamos la fórmula: Cos(theta) = (A·B) / (||A||*||B||)
+var similarity = dotProduct.divide(magnitudeImage.multiply(magnitudeQuery));
+
+// IMPORTANTE: Convertimos el resultado de Array a Imagen normal para poder verla
+var similarityImage = similarity.arrayGet([0]);
+
+// 5. Visualización
+// Usamos un umbral bien alto para que solo veas lo que se parece mucho a tu buque
+Map.addLayer(similarityImage, {
+  min: 0.95, 
+  max: 1, 
+  palette: ['black', 'blue', 'white', 'yellow']
+}, 'Similitud de Buques');
