@@ -385,6 +385,7 @@ var Forest =
 // 1. Área de estudio (Medellín y laderas)
 var region = ee.Geometry.Rectangle([-75.65, 6.20, -75.50, 6.35]);
 Map.centerObject(region, 13);
+Map.addLayer(region, {color: 'orange'}, 'Área de Estudio');
 
 // 2. [CORRECCIÓN] Definir la imagen de Alpha Earth
 var image = ee.ImageCollection('GOOGLE/SATELLITE_EMBEDDING/V1/ANNUAL')
