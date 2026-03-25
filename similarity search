@@ -379,7 +379,7 @@ var Forest = /* color: #1fd620 */ee.FeatureCollection(
 var areaBusqueda = queryPoint.buffer(3000).bounds();
 Map.centerObject(queryPoint, 18);
 Map.addLayer(queryPoint, {color: 'red'}, 'Punto de Referencia');
-
+Map.addLayer(areaBusqueda, {color: 'pink'}, 'Área de Estudio');
 // 2. Cargar Alpha Earth
 var image = ee.ImageCollection('GOOGLE/SATELLITE_EMBEDDING/V1/ANNUAL')
   .filterBounds(areaBusqueda)
