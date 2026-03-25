@@ -394,26 +394,25 @@ var queryVector = image.reduceRegion({
   scale: 10
 }).toArray();
 
-// 4. Cálculo de Similitud (Coseno) - VERSIÓN ROBUSTA
+// 4. Cálculo de Similitud (Coseno) - VERSIÓN ULTRA ROBUSTA
 var imageArray = image.toArray();
 
-// Calculamos el Producto Punto: A * B
-var dotProduct = imageArray.arrayDot(queryVector);
+// En lugar de arrayDot, multiplicamos y sumamos las bandas
+var dotProduct = imageArray.multiply(queryVector).arrayReduce(ee.Reducer.sum(), [0]);
 
-// Calculamos las magnitudes (normas) para la división
-var magnitudeImage = imageArray.arrayLength(0).sqrt();
-var magnitudeQuery = queryVector.arrayLength(0).sqrt();
+// Calculamos las magnitudes
+var magnitudeImage = imageArray.pow(2).arrayReduce(ee.Reducer.sum(), [0]).sqrt();
+var magnitudeQuery = queryVector.pow(2).arrayReduce(ee.Reducer.sum(), [0]).sqrt();
 
-// Aplicamos la fórmula: Cos(theta) = (A·B) / (||A||*||B||)
-var similarity = dotProduct.divide(magnitudeImage.multiply(magnitudeQuery));
+// Fórmula final del Coseno
+var cosineSimilarity = dotProduct.divide(magnitudeImage.multiply(magnitudeQuery));
 
-// IMPORTANTE: Convertimos el resultado de Array a Imagen normal para poder verla
-var similarityImage = similarity.arrayGet([0]);
+// Convertimos a imagen normal para verla
+var similarityImage = cosineSimilarity.arrayGet([0]);
 
 // 5. Visualización
-// Usamos un umbral bien alto para que solo veas lo que se parece mucho a tu buque
 Map.addLayer(similarityImage, {
-  min: 0.95, 
+  min: 0.98, // Ajusta si sale muy oscuro
   max: 1, 
-  palette: ['black', 'blue', 'white', 'yellow']
-}, 'Similitud de Buques');
+  palette: ['black', 'blue', 'yellow', 'white']
+}, 'Similitud de Buques Final');
