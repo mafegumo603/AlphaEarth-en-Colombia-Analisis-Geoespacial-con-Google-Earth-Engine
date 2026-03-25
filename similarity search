@@ -408,7 +408,7 @@ var cosineSimilarity = dotProduct.divide(magnitudeImage.multiply(magnitudeQuery)
 
 // 5. Visualización
 Map.addLayer(cosineSimilarity, {
-  min: 0.98, // Ajusta si ves todo negro
+  min: 0.90, // Ajusta si ves todo negro
   max: 1, 
   palette: ['black', 'blue', 'yellow', 'white']
 }, 'Similitud de Buques Final');
