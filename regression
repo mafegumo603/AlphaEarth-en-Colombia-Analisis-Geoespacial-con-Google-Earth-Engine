@@ -376,53 +376,46 @@ var Forest = /* color: #1fd620 */ee.FeatureCollection(
 /***** End of imports. If edited, may not auto-convert in the playground. *****/
 //Regresion
 
-// 1. Área de estudio (Bahía de Cispatá - Manglares)
-var region = ee.Geometry.Rectangle([-75.95, 9.35, -75.85, 9.45]);
+// 1. Área de estudio (Valle de Aburrá - Medellín y laderas)
+var region = ee.Geometry.Rectangle([-75.65, 6.20, -75.50, 6.35]);
 Map.centerObject(region, 13);
 
-// 2. Cargar Embeddings (Ruta oficial estable)
+// 2. [CORRECCIÓN] Definir la imagen de Alpha Earth
 var image = ee.ImageCollection('GOOGLE/SATELLITE_EMBEDDING/V1/ANNUAL')
   .filterBounds(region)
-  .filterDate('2023-01-01', '2023-12-31')
+  .filterDate('2025-01-01', '2025-12-31')
   .first()
   .clip(region);
 
-// 3. Cargar datos de GEDI (L2A - Altura del dosel relativa rh98)
-// Usamos el dataset de GEDI rasterizado para facilitar la regresión
-var gedi = ee.Image("LARSE/GEDI/L2A_002_MONTHLY/2023_01") // Ejemplo de un mes con datos
-  .select('rh98')
+// 3. Cargar Datos de Referencia (Dynamic World - Probabilidad de Construcción)
+var builtUp = ee.ImageCollection('GOOGLE/DYNAMICWORLD/V1')
+  .filterBounds(region)
+  .filterDate('2023-01-01', '2023-12-31')
+  .select('built') // Seleccionamos la probabilidad de que sea "área construida"
+  .mean()
   .clip(region);
 
-// 4. Unir bandas para entrenamiento (Embedding + Target: Altura)
-var combined = image.addBands(gedi);
+// 4. Unir los embeddings con el objetivo (builtUp)
+var combined = image.addBands(builtUp);
 
-// Muestreamos solo donde hay datos de GEDI (evitando valores nulos)
+// 5. Muestreo para que la IA aprenda la relación textura-construcción
 var training = combined.sample({
-  region: region,
-  scale: 25,
-  numPixels: 2000,
-  geometries: true
-}).filter(ee.Filter.notNull(['rh98']));
+  region: region, 
+  scale: 10, 
+  numPixels: 2000
+});
 
-// 5. Entrenar el Regresor (Random Forest en modo REGRESSION)
+// 6. Entrenar el Regresor (Modo REGRESSION)
 var regressor = ee.Classifier.smileRandomForest(100)
-  .setOutputMode('REGRESSION') // <--- CLAVE: Aquí predice metros, no clases
+  .setOutputMode('REGRESSION') // Predecimos un valor de 0 a 1 (densidad)
   .train({
-    features: training,
-    classProperty: 'rh98',
+    features: training, 
+    classProperty: 'built', 
     inputProperties: image.bandNames()
   });
 
-// 6. Predecir la altura en toda el área usando los Embeddings
-var predictedHeight = image.classify(regressor);
+// 7. Generar el mapa de Densidad Urbana
+var urbanDensity = image.classify(regressor);
 
-// 7. Visualización
-// Azul = Manglar bajo, Rojo = Manglar de gran altura (30m+)
-var visParams = {
-  min: 0, 
-  max: 30, 
-  palette: ['#0000FF', '#FFFF00', '#FF0000']
-};
-
-Map.addLayer(predictedHeight, visParams, 'Altura Estimada Manglares Cispatá');
-Map.addLayer(gedi, {min: 0, max: 30}, 'Datos GEDI Originales (Referencia)', false);
+// 8. Visualización: Gris claro (baja densidad) a Rojo (alta densidad urbana)
+Map.addLayer(urbanDensity, {min: 0, max: 0.8, palette: ['#f7f7f7', '#cccccc', '#ff4d4d']}, 'Densidad de Construcción Medellín');
