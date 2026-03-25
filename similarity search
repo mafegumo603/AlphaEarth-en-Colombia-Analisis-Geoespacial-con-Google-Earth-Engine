@@ -387,32 +387,28 @@ var image = ee.ImageCollection('GOOGLE/SATELLITE_EMBEDDING/V1/ANNUAL')
   .first()
   .clip(areaBusqueda);
 
-// 3. Obtener el vector del punto de consulta
+// 3. Obtener el vector (embedding) del punto de consulta
+// Lo dejamos como imagen de 1x1 para que las operaciones sean más fáciles
 var queryVector = image.reduceRegion({
   reducer: ee.Reducer.first(),
   geometry: queryPoint,
   scale: 10
-}).toArray();
+}).toImage(image.bandNames());
 
-// 4. Cálculo de Similitud (Coseno) - VERSIÓN ULTRA ROBUSTA
-var imageArray = image.toArray();
+// 4. Cálculo de Similitud (Coseno) - MODO SEGURO
+// Realizamos el Producto Punto manualmente sumando la multiplicación de bandas
+var dotProduct = image.multiply(queryVector).reduce(ee.Reducer.sum());
 
-// En lugar de arrayDot, multiplicamos y sumamos las bandas
-var dotProduct = imageArray.multiply(queryVector).arrayReduce(ee.Reducer.sum(), [0]);
+// Calculamos las magnitudes (normas)
+var magnitudeImage = image.pow(2).reduce(ee.Reducer.sum()).sqrt();
+var magnitudeQuery = queryVector.pow(2).reduce(ee.Reducer.sum()).sqrt();
 
-// Calculamos las magnitudes
-var magnitudeImage = imageArray.pow(2).arrayReduce(ee.Reducer.sum(), [0]).sqrt();
-var magnitudeQuery = queryVector.pow(2).arrayReduce(ee.Reducer.sum(), [0]).sqrt();
-
-// Fórmula final del Coseno
+// Aplicamos la fórmula final
 var cosineSimilarity = dotProduct.divide(magnitudeImage.multiply(magnitudeQuery));
 
-// Convertimos a imagen normal para verla
-var similarityImage = cosineSimilarity.arrayGet([0]);
-
 // 5. Visualización
-Map.addLayer(similarityImage, {
-  min: 0.98, // Ajusta si sale muy oscuro
+Map.addLayer(cosineSimilarity, {
+  min: 0.98, // Ajusta si ves todo negro
   max: 1, 
   palette: ['black', 'blue', 'yellow', 'white']
 }, 'Similitud de Buques Final');
