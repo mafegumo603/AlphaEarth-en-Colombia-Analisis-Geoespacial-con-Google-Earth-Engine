@@ -1,5 +1,8 @@
 /**** Start of imports. If edited, may not auto-convert in the playground. ****/
-var Forest = /* color: #1fd620 */ee.FeatureCollection(
+var Forest = 
+    /* color: #1fd620 */
+    /* shown: false */
+    ee.FeatureCollection(
         [ee.Feature(
             ee.Geometry.Point([-72.77761122963432, 2.49021620560627]),
             {
@@ -186,7 +189,10 @@ var Forest = /* color: #1fd620 */ee.FeatureCollection(
               "class": 0,
               "system:index": "30"
             })]),
-    Deforested = /* color: #ffa207 */ee.FeatureCollection(
+    Deforested = 
+    /* color: #ffa207 */
+    /* shown: false */
+    ee.FeatureCollection(
         [ee.Feature(
             ee.Geometry.Point([-72.77357308112687, 2.423597464011289]),
             {
@@ -376,7 +382,7 @@ var Forest = /* color: #1fd620 */ee.FeatureCollection(
 /***** End of imports. If edited, may not auto-convert in the playground. *****/
 //Regresion
 
-// 1. Área de estudio (Valle de Aburrá - Medellín y laderas)
+// 1. Área de estudio (Medellín y laderas)
 var region = ee.Geometry.Rectangle([-75.65, 6.20, -75.50, 6.35]);
 Map.centerObject(region, 13);
 
