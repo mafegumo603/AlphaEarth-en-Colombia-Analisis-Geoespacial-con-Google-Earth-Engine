@@ -396,7 +396,7 @@ var image = ee.ImageCollection('GOOGLE/SATELLITE_EMBEDDING/V1/ANNUAL')
 // 3. Cargar Datos de Referencia (Dynamic World - Probabilidad de Construcción)
 var builtUp = ee.ImageCollection('GOOGLE/DYNAMICWORLD/V1')
   .filterBounds(region)
-  .filterDate('2023-01-01', '2023-12-31')
+  .filterDate('2025-01-01', '2025-12-31')
   .select('built') // Seleccionamos la probabilidad de que sea "área construida"
   .mean()
   .clip(region);
