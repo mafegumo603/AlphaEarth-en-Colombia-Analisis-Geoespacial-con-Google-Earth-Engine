@@ -10,7 +10,7 @@ El repositorio reúne cuatro flujos de trabajo en JavaScript orientados a distin
   * **Área de estudio:** Rectángulo sobre Medellín y sus laderas (`[-75.65, 6.20, -75.50, 6.35]`), periodo `2025-01-01` a `2025-12-31`.
   * **Variable objetivo / referencia:** Probabilidad promedio de cobertura construida (`built`) derivada de `GOOGLE/DYNAMICWORLD/V1` en el mismo rango temporal.
   * **Metodología:** Muestreo de 2,000 píxeles a 10 m (`scale: 10`), entrenamiento de un clasificador `ee.Classifier.smileRandomForest(100)` en modo `'REGRESSION'` sobre todas las bandas de embeddings y generación de un mapa continuo de densidad de construcción (rango visualizado `0` a `0.8`).
-  * *(Nota: Incluye colecciones de puntos `Forest` y `Deforested` en las importaciones heredadas de plantilla).*
+
 
 * **`simmilarity search`** — **Búsqueda de similitud espectral/vectorial mediante similitud del coseno:**
   * **Área de estudio:** Ventana cuadrada de 3,000 m de radio (`queryPoint.buffer(3000).bounds()`) centrada en un punto de referencia (`[-77.09021546148223, 3.9051902785370505]`, zona costera/marítima del Pacífico colombiano), periodo `2024-01-01` a `2024-12-31`.
